@@ -79,6 +79,21 @@ void GR_draw_circle(SDL_Renderer* renderer, int turn, int index, int sub_index){
 
 }
 
+//TODO:REFACTOR
+void valid_subgrids_to_rects(SDL_Rect* rects, int* available_subgrids, int total){
+  int k = 0;
+  for(int i = 0; i<total; i++){
+    SDL_Rect rect = nmat_to_normalized_rect(available_subgrids[i], &grid_bounds, 3);
+    SDL_Point xy = INPUT_index_nmatrix(available_subgrids[i],3);
+    rect.x = grid_bounds.x + smallgrid_bounds.w * xy.x;
+    rect.y = grid_bounds.y + smallgrid_bounds.h * xy.y;
+    rects[k++] = rect;
+  }
+  for(int i = total; i<9; i++){
+    rects[k++] = (SDL_Rect){0};
+  }
+}
+
 void GR_draw_frame(const SDL_Point* pointer_pos){
   SDL_Rect draw = smallgrid_bounds;
   SDL_SetRenderDrawColor(renderer, 180, 180, 180, 255);
@@ -95,30 +110,37 @@ void GR_draw_frame(const SDL_Point* pointer_pos){
   }
 
   GR_draw_grid(renderer,&grid_bounds,RED,1);
-  
     //TODO: REMOVE
   // for(int i = 0; i<9; i++){
   //   rects[i] = nmat_to_normalized_rect(i,&grid_bounds,3);
   // }
   
   // int index,sub_index;
-  int in_grid = INPUT_rawmouse_to_game(pointer_pos, &grid_bounds, &smallgrid_bounds,3,&index_,&sub_index_);
+  INPUT_rawmouse_to_game(pointer_pos, &grid_bounds, &smallgrid_bounds,3,&index_,&sub_index_);
   int GAME_STATE[9][10];
   get_GAME_STATE(GAME_STATE);
   int valid_move = GAME_validate_move(index_,sub_index_);
   GR_draw_game_state(renderer,GAME_STATE);
-  if(valid_move)
-    GR_draw_circle(renderer,GAME_get_turn(),index_,sub_index_);
-  // rects[2].w = 0;
-  // GR_draw_overlays(renderer,rects);
-          
+  if(valid_move){
+    GR_draw_circle(renderer,GAME_get_turn(),index_,sub_index_);  
+    
+    //TODO: REFACTOR
+    /*
+    int total = 0;
+    if(sub_index_ != -1){
+      GAME_get_available_cells(sub_index_,a,&total);
+      valid_subgrids_to_rects(rects,a,total);
+      GR_draw_overlays(renderer,rects);
+    }
+    */
+  }
 }
 
 void GR_draw_game_state(SDL_Renderer* renderer, int GAME_STATE[9][10]){
   for(int i = 0; i<9; i++){
     SDL_Point xy = INPUT_index_nmatrix(i, 3);
     for(int j = 0; j<9; j++){
-      if(GAME_STATE[i][j] == -1) continue;
+      if(GAME_STATE[i][j] < 0) continue;
       SDL_Rect draw = nmat_to_normalized_rect(j, &smallgrid_bounds, 3);
       draw.x += grid_bounds.x + smallgrid_bounds.w * xy.x;
       draw.y += grid_bounds.y + smallgrid_bounds.h * xy.y;
@@ -144,7 +166,6 @@ void GR_draw_overlays(SDL_Renderer* renderer, SDL_Rect pos[9]){
 }
 
 void GR_init_render_input(){
-  SDL_Rect rects[9];
   int quit = 0;
 
   window = SDL_CreateWindow("",0,0,600,400,0);
@@ -157,7 +178,8 @@ void GR_init_render_input(){
   SDL_Point pointer_pos = {.x = 0, .y = 0};
 
   while(!quit){
-    while(SDL_WaitEvent(&event)){
+    SDL_Delay(1000/60);
+    while(SDL_PollEvent(&event)){
       switch (event.type) {
         case SDL_QUIT:
           quit = 1;
@@ -166,14 +188,13 @@ void GR_init_render_input(){
 
         case SDL_MOUSEMOTION:
           SDL_GetMouseState(&pointer_pos.x, &pointer_pos.y);
-          GR_draw_frame(&pointer_pos);
           break;
         
         case SDL_MOUSEBUTTONDOWN:
           GAME_play_move(index_,sub_index_);
-          GR_draw_frame(&pointer_pos);
           break;
       }
+      GR_draw_frame(&pointer_pos);
       SDL_RenderPresent(renderer);
     }
   }
