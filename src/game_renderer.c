@@ -151,7 +151,7 @@ void GR_draw_game_state(SDL_Renderer* renderer, int GAME_STATE[9][10]){
   }
 
   for(int i = 0; i<9; i++){
-    if(GAME_STATE[i][9] == -1) continue;
+    if(GAME_STATE[i][9] < 0) continue;
     SDL_Rect draw = nmat_to_normalized_rect(i, &grid_bounds, 3);
     SDL_RenderCopy(renderer, texture,NULL,&draw);
     SDL_Texture* piece_texture = GAME_STATE[i][9] == 0? circle_texture: cross_texture;
