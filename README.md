@@ -7,10 +7,18 @@ Super Tic Tac Toe is an advanced version of the classic Tic Tac Toe game, implem
 ![Screenshot 1](https://github.com/user-attachments/assets/f03bdd56-f7f4-4f5e-bcff-26d0e4ec2513)
 
 ## How to compile
-The project can be compiled using `make` 
+The project is built using `CMake`.
 
 ### Requirements
 To build and run this project, you need:
 - A C compiler (e.g., GCC or Clang)
 - [SDL2](https://www.libsdl.org/) library installed on your system
-- SDL2_image and SDL2_ttf librarie s
+- SDL2_image and SDL2_ttf libraries
+
+### Compilation
+1. Create a build directory `mkdir build; cd build`
+2. Run CMake `cmake ..`
+3. Build `cmake --build .`
+
+#### Creating package
+To create a `.zip` file use `cmake --build . --target package`
